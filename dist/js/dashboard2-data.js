@@ -1,5 +1,70 @@
+
 /*Dashboard2 Init*/
-"use strict"; 
+
+// This method is to check if a state has counties in the database and if so, the names and ids of them
+
+    fetch("https://maanuj-vora.github.io/Bing-COVID-19-Current-Data/currentData.json")
+        .then(response => response.json())
+        .then(data => {
+            var id = data["id"];
+            var displayName = data["displayName"];
+            var i,j;
+            for(i = 0 ; i < (data["areas"].length) ; i ++){
+                var go = (data['areas'][i]["id"] === "chinamainland");
+                if(go){
+                        var count = 200;
+                        for(j = 0 ; j < 30;j++){
+                           var compare;
+                           var name = data["areas"][i]["areas"][j]["displayName"];
+                            var tableDisplayName = document.getElementById((count++)+"");
+                            compare = name!= null;
+                            if(compare == true)
+                           tableDisplayName.innerHTML = name ;
+                            else    tableDisplayName.innerHTML = "No Data";
+                            
+                            var confirmed = data["areas"][i]["areas"][j]["totalConfirmed"];
+                             var tableTotalConfirmed = document.getElementById((count++)+"");
+                            compare = confirmed != null;
+                            if(compare == true){
+                                  tableTotalConfirmed.innerHTML = confirmed;
+                            }
+                          
+                            else {   tableTotalConfirmed.innerHTML = "No Data";}
+
+                            var deaths = data["areas"][i]["areas"][j]["totalDeaths"];
+                             var tableTotalDeaths = document.getElementById((count++)+"");
+                            compare = deaths != null;
+                            if(compare == true)
+                            tableTotalDeaths.innerHTML = deaths;
+                            else    tableTotalDeaths.innerHTML = "No Data";
+                            
+                            var recover = data["areas"][i]["areas"][j]["totalRecovered"];
+                             var tableTotalRecovered = document.getElementById((count++)+"");
+                            compare = recover != null;
+                            if(compare == true)
+                            tableTotalRecovered.innerHTML= recover;
+                            else    tableTotalRecovered.innerHTML = "No Data";
+                            
+                            var dateUpdate = data["areas"][i]["areas"][j]["lastUpdated"];
+                             var tableLastUpdated = document.getElementById((count++)+"");
+                            compare = dateUpdate != null;
+                            var date = new Date(dateUpdate);
+                            if(compare == true)
+                            tableLastUpdated.innerHTML = date.getFullYear()+"/"+date.getMonth()+"/"+date.getDate() ;
+                            else    tableLastUpdated.innerHTML = "No Data";
+                            
+                        }   
+                }
+            }
+            $(document).ready(function () {
+$('#listTable').DataTable({
+"scrollY": "300px",
+"scrollCollapse": true,
+});
+$('.dataTables_length').addClass('bs-select');
+});
+        });
+
 
 /*****Ready function start*****/
 $(document).ready(function(){
@@ -9,11 +74,79 @@ $(document).ready(function(){
 			"iDisplayLength": 4
 		});
 });
+
+
+
+
+//Function //
+
+function printTable(a){
+
+    console.log(a);
+}
+
+
+
 /*****Ready function end*****/
+
+
+
+
+
+
+let dropdown = document.getElementById('city-dropdown');
+dropdown.length = 0;
+
+let defaultOption = document.createElement('option');
+defaultOption.text = 'Choose City';
+
+dropdown.add(defaultOption);
+dropdown.selectedIndex = 0;
+
+const url = 'https://maanuj-vora.github.io/Bing-COVID-19-Current-Data/currentData.json';
+
+const request = new XMLHttpRequest();
+request.open('GET', url, true);
+
+request.onload = function() {
+  if (request.status === 200) {
+    const data = JSON.parse(request.responseText);
+    let option;
+      
+    for (let i = 0; i < data.areas.length; i++) {
+      option = document.createElement('option');
+      option.text = data.areas[7].areas[i].displayName;
+      option.value = data.areas[7].areas[i].id;
+      dropdown.add(option);
+
+    }
+   } else {
+    // Reached the server, but it returned an error
+  }   
+}
+
+request.onerror = function() {
+  console.error('An error occurred fetching the JSON from ' + url);
+};
+
+request.send();
+    
+    
+    
+    
+
+
+
 
 /*****E-Charts function start*****/
 var echartsConfig = function() { 
-	if( $('#e_chart_1').length > 0 ){
+	
+       //Get Today Date
+    var nowDate = new Date(); 
+    var date = nowDate.getFullYear()+'-'+(nowDate.getMonth()+1)+'-'+(nowDate.getDate()-1); 
+    
+    
+    if( $('#e_chart_1').length > 0 ){
 		var eChart_1 = echarts.init(document.getElementById('e_chart_1'));
 		var dataBJ = [
 			[55,9,56,0.46,18,6,1],
@@ -228,6 +361,46 @@ var echartsConfig = function() {
 		eChart_1.resize();
 	}
 	if( $('#e_chart_2').length > 0 ){
+        
+        
+        var infected=0;
+        var recovered=0;
+        var deceased=0;
+        
+        var inf_cases = document.getElementById('inf-cases');
+        var rec_cases = document.getElementById('rec-cases');
+        var dec_cases = document.getElementById('dec-cases');
+        var Total_cases = document.getElementById('Total-cases');
+        
+        var element = document.getElementById("stats");
+        var xhttp = new XMLHttpRequest();
+        
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) 
+        
+        {
+            var result = JSON.parse(this.responseText);
+            
+            for(var i = 0 ; i < result.China.length ; i++){
+		   //Get Results of Today's Date
+			if(result.China[i].date == date){
+                
+			infected = result.China[i].confirmed;
+			deceased = result.China[i].deaths;
+			recovered = result.China[i].recovered;
+               
+		}
+
+            };
+            
+            $(".e_chart_3").load(echartsConfig);
+
+        inf_cases.innerHTML = infected + " cases";
+        rec_cases.innerHTML = recovered + " cases";
+        dec_cases.innerHTML = deceased + " cases";
+                    
+        }
+        
 		var eChart_2 = echarts.init(document.getElementById('e_chart_2'));
 		var option1 = {
 			tooltip: {
@@ -239,57 +412,71 @@ var echartsConfig = function() {
 			},
 			series: [
 				{
-					name:'pie',
+					name:'Today updates',
 					type:'pie',
 					selectedMode: 'single',
-					radius: [0, '30%'],
-					color: ['#d36ee8', '#119dd2', '#667add'],
+					radius: [0, '70%'],
+					color: ['red', 'white', 'orange'],
 					label: {
 						normal: {
-							show:false,
+							show:true,
 						}
 					},
+
 					data:[
-						{value:335, name:'1'},
-						{value:679, name:'2'},
-						{value:1548, name:'3', selected:true}
+						{value:deceased, name:'Death Cases'},
+						{value:recovered, name:'Recovered Cases'},
+                        {value:infected, name:'Confirmed Cases'}
 					]
 				},
-				{
-					name:'Radio',
-					type:'pie',
-					radius: ['55%', '80%'],
-					label: {
-						normal: {
-							show:false,
-						}
-					},
-					color: ['#d36ee8', '#119dd2', '#667add'],
-					data:[
-						{value:335, name:'1'},
-						{value:210, name:'2'},
-						{value:434, name:'3'},
-					]
-				}
+				
 			]
 		};
-		eChart_2.setOption(option1);
+		
+          
+          
+          
+        eChart_2.setOption(option1);
 		eChart_2.resize();
-	}
+           
+      
+      };
+          xhttp.open("GET","https://pomber.github.io/covid19/timeseries.json", true);
+          xhttp.send();
+        }
 	if( $('#e_chart_3').length > 0 ){
 		var eChart_3 = echarts.init(document.getElementById('e_chart_3'));
-		var base = +new Date(1968, 9, 3);
-		var oneDay = 24 * 3600 * 1000;
-		var date = [];
+		
+		var lbl = new Array();
+		var cases = new Array();
+		var Death = new Array();
+		var Recovere = new Array();
 
-		var data = [Math.random() * 300];
+		var OurRequest = new XMLHttpRequest();
+		OurRequest.open('GET' , 'https://pomber.github.io/covid19/timeseries.json');
+		OurRequest.onload = function(){
+    	var Data = JSON.parse(OurRequest.responseText);
+    	console.log(Data.China.length);
 
-		for (var i = 1; i < 5000; i++) {
-			var now = new Date(base += oneDay);
-			date.push([now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'));
-			data.push(Math.round((Math.random() - 0.5) * 40 + data[i - 1]));
+    	Render(Data);
 		}
+		OurRequest.send();
+
+
+	function Render(info){
+		
+		for(var i = 0 ; i < info.China.length ; i++){
+		   
+			lbl[i] = info.China[i].date;
+			cases[i] = info.China[i].confirmed;
+			Death[i] = info.China[i].deaths;
+			Recovere[i]= info.China[i].recovered;
+		}
+
+
+        
 		var option3 = {
+
 			tooltip: {
 				trigger: 'axis',
 				backgroundColor: 'rgba(33,33,33,1)',
@@ -299,7 +486,8 @@ var echartsConfig = function() {
 					type: 'cross',
 					label: {
 						backgroundColor: 'rgba(33,33,33,1)'
-					}
+					},
+				
 				},
 				textStyle: {
 					color: '#fff',
@@ -314,10 +502,10 @@ var echartsConfig = function() {
 			},
 			xAxis: {
 				type: 'category',
-				boundaryGap: false,
-				data: date,
+				boundaryGap: true,
+				data: lbl,
 				axisLine: {
-					show:false
+					show:true
 				},
 				axisLabel: {
 					textStyle: {
@@ -328,11 +516,17 @@ var echartsConfig = function() {
 						fontSize: 12
 					}
 				},
+				
 			},
 			yAxis: {
 				type: 'value',
 				axisLine: {
-						show:false
+						show:true
+				}, 
+				ticks :{
+					beginAtZero: true,
+					max: 100000,
+					stepSize: 10000,
 				},
 				axisLabel: {
 					textStyle: {
@@ -346,29 +540,67 @@ var echartsConfig = function() {
 				splitLine: {
 					show: false,
 				},
-				boundaryGap: [0, '100%']
+				//boundaryGap: [0, '100%'],
 			},
 			series: [
 				{
-					name:'Educattion',
+					name:'Confirmed Cases',
 					type:'line',
 					smooth:true,
 					symbol: 'none',
 					sampling: 'average',
 					itemStyle: {
 						normal: {
-							color: '#667add'
+							color: '#ffa323'
 						}
 					},
 					areaStyle: {
 						"show":false
 					},
-					data: data
+					data: cases,
 				}
-			]
+			, 
+			{
+				name:'Recovered Cases',
+				type:'line',
+				smooth:true,
+				symbol: 'none',
+				sampling: 'average',
+				itemStyle: {
+					normal: {
+						color: '#f4f4f4'
+					}
+				},
+				areaStyle: {
+					"show":false
+				},
+				data: Recovere,
+			},
+			{
+				name:'Death Cases',
+				type:'line',
+				smooth:true,
+				symbol: 'none',
+				sampling: 'average',
+				itemStyle: {
+					normal: {
+						color: '#ee4540'
+					}
+				},
+				areaStyle: {
+					"show":false
+				},
+				data: Death,
+			}
+		]
 		};
 		eChart_3.setOption(option3);
 		eChart_3.resize();
+	
+	
+	}	
+	
+		OurRequest.abort;
 	}
 	if( $('#e_chart_4').length > 0 ){
 		var eChart_4 = echarts.init(document.getElementById('e_chart_4'));
@@ -439,7 +671,7 @@ var echartsConfig = function() {
 		}
 		var app = [];
 		app.timeTicket = setInterval(function() {
-			var value = (Math.random() * 100).toFixed(2) - 0;
+			var value = 100;
 			option4.series[0].data[0].value = value;
 			option4.series[0].axisLine.lineStyle.color[0][0] = value / 100;
 			option4.series[0].axisLine.lineStyle.color[0][1] = detectionData(value);
@@ -611,19 +843,7 @@ var echartsConfig = function() {
 /*****E-Charts function end*****/
 
 /*****Load function start*****/
-$(window).load(function(){
-	window.setTimeout(function(){
-		$.toast({
-			heading: 'Welcome to Elmer',
-			text: 'Use the predefined ones, or specify a custom position object.',
-			position: 'bottom-left',
-			loaderBg:'#f8b32d',
-			icon: 'success',
-			hideAfter: 3500, 
-			stack: 6
-		});
-	}, 3000);
-});
+
 /*****Load function* end*****/
 
 /*****Sparkline function start*****/
@@ -655,6 +875,8 @@ var sparklineLogin = function() {
 			});
 		}	
 }
+
+
 /*****Sparkline function end*****/
 
 /*****Resize function start*****/
@@ -674,3 +896,5 @@ $(window).on("resize", function () {
 sparklineLogin();
 echartsConfig();
 /*****Function Call end*****/
+
+
