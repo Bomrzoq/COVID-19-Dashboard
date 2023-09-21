@@ -1,22 +1,9 @@
 
-/*Dashboard2 Init*/ 
-$('#listTable').dataTable( {
-  "columns": [
-    { "searchable": true },
-    'displayName',
-    'totalConfirmed',
-    'totalDeaths',
-    'totalRecovered',
-      'lastUpdated'
-  ]
-} );
-
-
+/*Dashboard2 Init*/
 
 // This method is to check if a state has counties in the database and if so, the names and ids of them
 
     fetch("https://maanuj-vora.github.io/Bing-COVID-19-Current-Data/currentData.json")
-
         .then(response => response.json())
         .then(data => {
             var id = data["id"];
@@ -25,32 +12,57 @@ $('#listTable').dataTable( {
             for(i = 0 ; i < (data["areas"].length) ; i ++){
                 var go = (data['areas'][i]["id"] === "chinamainland");
                 if(go){
-                    
+                        var count = 200;
                         for(j = 0 ; j < 30;j++){
-                            var name = data["areas"][i]["areas"][j]["displayName"];
-                             var confirmed = data["areas"][i]["areas"][j]["totalConfirmed"];
-                             var deaths = data["areas"][i]["areas"][j]["totalDeaths"];
-                             var recover = data["areas"][i]["areas"][j]["totalRecovered"];
+                           var compare;
+                           var name = data["areas"][i]["areas"][j]["displayName"];
+                            var tableDisplayName = document.getElementById((count++)+"");
+                            compare = name!= null;
+                            if(compare == true)
+                           tableDisplayName.innerHTML = name ;
+                            else    tableDisplayName.innerHTML = "No Data";
                             
-                              var dateUpdate = data["areas"][i]["areas"][j]["lastUpdated"];
-                             var date = new Date(dateUpdate);
+                            var confirmed = data["areas"][i]["areas"][j]["totalConfirmed"];
+                             var tableTotalConfirmed = document.getElementById((count++)+"");
+                            compare = confirmed != null;
+                            if(compare == true){
+                                  tableTotalConfirmed.innerHTML = confirmed;
+                            }
+                          
+                            else {   tableTotalConfirmed.innerHTML = "No Data";}
+
+                            var deaths = data["areas"][i]["areas"][j]["totalDeaths"];
+                             var tableTotalDeaths = document.getElementById((count++)+"");
+                            compare = deaths != null;
+                            if(compare == true)
+                            tableTotalDeaths.innerHTML = deaths;
+                            else    tableTotalDeaths.innerHTML = "No Data";
                             
-                          var table =  $('#listTable').DataTable();
- 
-                        table.row.add( {
-                                "displayName": name,
-                                "totalConfirmed":   confirmed,
-                                "totalDeaths":    deaths,
-                                "totalRecovered": recover,
-                                "lastUpdated":     date.getFullYear()+"/"+date.getMonth()+"/"+date.getDate(),
-                            } ).draw();
-                      
-                  
+                            var recover = data["areas"][i]["areas"][j]["totalRecovered"];
+                             var tableTotalRecovered = document.getElementById((count++)+"");
+                            compare = recover != null;
+                            if(compare == true)
+                            tableTotalRecovered.innerHTML= recover;
+                            else    tableTotalRecovered.innerHTML = "No Data";
+                            
+                            var dateUpdate = data["areas"][i]["areas"][j]["lastUpdated"];
+                             var tableLastUpdated = document.getElementById((count++)+"");
+                            compare = dateUpdate != null;
+                            var date = new Date(dateUpdate);
+                            if(compare == true)
+                            tableLastUpdated.innerHTML = date.getFullYear()+"/"+date.getMonth()+"/"+date.getDate() ;
+                            else    tableLastUpdated.innerHTML = "No Data";
                             
                         }   
                 }
             }
-  
+            $(document).ready(function () {
+$('#listTable').DataTable({
+"scrollY": "300px",
+"scrollCollapse": true,
+});
+$('.dataTables_length').addClass('bs-select');
+});
         });
 
 
@@ -68,61 +80,13 @@ $(document).ready(function(){
 
 //Function //
 
-function printTable(){
-var table = $('#listTable').DataTable();
- 
-table.clear().draw();
+function printTable(a){
 
-   
-	var cityxxx = document.getElementById("city-dropdown");
-	console.log(cityxxx.options[cityxxx.selectedIndex].text);
-	const SearchByCityName = cityxxx.options[cityxxx.selectedIndex].text ; 
-
-	const JSONurl = 'https://maanuj-vora.github.io/Bing-COVID-19-Current-Data/currentData.json';
-
-	const Cityrequest = new XMLHttpRequest();
-	Cityrequest.open('GET', JSONurl, true);
-
-	Cityrequest.onload = function(){
-
-		if (Cityrequest.status === 200) {
-			const Citydata = JSON.parse(Cityrequest.responseText);
-			
-			for (var i = 0; i < Citydata.areas[7].areas.length; i++) {
-				
-				
-
-				if(Citydata.areas[7].areas[i].displayName == SearchByCityName){
-					console.log(Citydata.areas[7].areas[i].totalDeaths + "  totalDeaths");
-					console.log(Citydata.areas[7].areas[i].totalConfirmed + "  totalConfirmed");
-					console.log(Citydata.areas[7].areas[i].totalRecovered + "  totalRecovered");
-					//// here break >.>
-                        var compare;
-                        
-                       var table = $('#listTable').DataTable();
- 
-                        table.row.add( {
-                                "displayName": Citydata.areas[7].areas[i].displayName,
-                                "totalConfirmed":   Citydata.areas[7].areas[i].totalConfirmed,
-                                "totalDeaths":    Citydata.areas[7].areas[i].totalDeaths,
-                                "totalRecovered": Citydata.areas[7].areas[i].totalRecovered,
-                                "lastUpdated":     Citydata.areas[7].areas[i].lastUpdated,
-                            } ).draw();
-					///print this value on the table  // totalConfirmed // totalDeaths // totalRecovered
-					break;
-				}
-		
-			}
-		}
-
-	}
-
-	Cityrequest.send();
-
+    console.log(a);
 }
 
 
-                      
+
 /*****Ready function end*****/
 
 
@@ -149,10 +113,10 @@ request.onload = function() {
     const data = JSON.parse(request.responseText);
     let option;
       
-    for (var i = 0; i < data.areas[7].areas.length; i++) {
+    for (let i = 0; i < data.areas.length; i++) {
       option = document.createElement('option');
-	  option.text = data.areas[7].areas[i].displayName;
-	  option.value = data.areas[7].areas[i].id;
+      option.text = data.areas[7].areas[i].displayName;
+      option.value = data.areas[7].areas[i].id;
       dropdown.add(option);
 
     }
@@ -164,8 +128,6 @@ request.onload = function() {
 request.onerror = function() {
   console.error('An error occurred fetching the JSON from ' + url);
 };
-
-
 
 request.send();
     
